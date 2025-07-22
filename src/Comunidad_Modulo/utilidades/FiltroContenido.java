@@ -11,7 +11,7 @@ import enums.TipoInfraccion;
 public class FiltroContenido {
     
     private static final Set<String> PALABRAS_PROHIBIDAS = new HashSet<>(Arrays.asList(
-        // Palabras ofensivas comunes (puedes agregar más según necesites)
+        // Palabras ofensivas comunes (pendiente de agregar más)
         "idiota", "estupido", "tonto", "imbecil", "maldito", "basura", "porqueria",
         "cretino", "baboso", "payaso", "fracasado", "perdedor", "inutil", "patético",
         "odio", "mierda", "jodido", "maldita", "puto", "puta", "cabrón", "cabrona",

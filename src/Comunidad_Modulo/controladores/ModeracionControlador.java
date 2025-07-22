@@ -212,6 +212,8 @@ public class ModeracionControlador implements IControlador {
         
         if (contexto.getUsuarios().isEmpty()) {
             System.out.println("No hay usuarios registrados.");
+            System.out.println("✅ Sin historial disponible.");
+            //System.out.println("=".repeat(35));
             InputHelper.presionarEnterParaContinuar();
             return;
         }
@@ -222,6 +224,7 @@ public class ModeracionControlador implements IControlador {
         
         if (indiceUsuario < 0 || indiceUsuario >= contexto.getUsuarios().size()) {
             System.out.println("Selección inválida.");
+            System.out.println("✅ Sin historial disponible.");
             InputHelper.presionarEnterParaContinuar();
             return;
         }

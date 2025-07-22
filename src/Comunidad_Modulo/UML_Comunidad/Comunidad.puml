@@ -44,6 +44,18 @@ class Comunidad {
   + obtenerEstadisticas()
 }
 
+class prueba{
+  + idPrueba: String
+  + nombre: String
+  + descripcion: String
+  + fechaCreacion: DateTime
+  + participantes: List<UsuarioTemp>
+  --
+  + iniciarPrueba()
+  + finalizarPrueba()
+  + obtenerResultados()
+}
+
 ' === Usuario Temporal ===
 class UsuarioTemp {
   + idUsuario: String

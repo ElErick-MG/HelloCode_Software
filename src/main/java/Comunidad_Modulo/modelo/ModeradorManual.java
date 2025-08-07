@@ -1,8 +1,8 @@
 package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
-import Comunidad_Modulo.servicios.ModeradorService;
-import Comunidad_Modulo.servicios.ModeradorService.ResultadoOperacion;
+import Comunidad_Modulo.servicios.ServicioModeracion;
+import Comunidad_Modulo.servicios.ServicioModeracion.ResultadoOperacion;
 
 import java.util.List;
 import java.util.Map;
@@ -14,20 +14,25 @@ import java.util.HashMap;
  */
 public class ModeradorManual extends Moderador {
     
-    private ModeradorService moderadorService;
+    private ServicioModeracion servicioModeracion;
     private int operacionesRealizadas;
     private Map<String, Integer> tiposOperaciones;
 
     public ModeradorManual(String nombre, String username) {
         super(nombre, username);
-        this.moderadorService = new ModeradorService();
+        this.servicioModeracion = new ServicioModeracion();
         this.operacionesRealizadas = 0;
         this.tiposOperaciones = new HashMap<>();
+        // Crear usuario para operaciones administrativas (se usará el moderador como admin)
+        this.usuarioAdmin = new UsuarioComunidad(username, "admin", nombre, username + "@sistema.com");
     }
 
     public ModeradorManual(String nombre) {
         this(nombre, "manualmod_" + System.currentTimeMillis());
     }
+
+    // Usuario para operaciones que requieren autenticación
+    private UsuarioComunidad usuarioAdmin;
 
     // Implementación de métodos abstractos
     
@@ -96,7 +101,7 @@ public class ModeradorManual extends Moderador {
      * Elimina un usuario de una comunidad específica
      */
     public ResultadoOperacion eliminarUsuarioDeComunidad(String nombreUsuario, String nombreComunidad) {
-        ResultadoOperacion resultado = moderadorService.eliminarUsuarioDeComunidad(nombreUsuario, nombreComunidad);
+        ResultadoOperacion resultado = servicioModeracion.eliminarUsuarioDeComunidad(nombreUsuario, nombreComunidad, usuarioAdmin);
         incrementarOperacion("eliminacion_usuario");
         
         if (resultado.isExitoso()) {
@@ -110,7 +115,7 @@ public class ModeradorManual extends Moderador {
      * Elimina una comunidad completa del sistema
      */
     public ResultadoOperacion eliminarComunidad(String nombreComunidad) {
-        ResultadoOperacion resultado = moderadorService.eliminarComunidad(nombreComunidad);
+        ResultadoOperacion resultado = servicioModeracion.eliminarComunidad(nombreComunidad, usuarioAdmin);
         incrementarOperacion("eliminacion_comunidad");
         
         if (resultado.isExitoso()) {
@@ -124,7 +129,7 @@ public class ModeradorManual extends Moderador {
      * Genera un reporte detallado de usuarios
      */
     public String generarReporteUsuarios() {
-        String reporte = moderadorService.generarReporteUsuarios();
+        String reporte = servicioModeracion.generarReporteUsuarios();
         incrementarOperacion("generacion_reporte");
         
         System.out.println("👤 MODERACIÓN MANUAL: Reporte generado por " + this.nombre);
@@ -135,7 +140,7 @@ public class ModeradorManual extends Moderador {
      * Genera historial de un grupo específico
      */
     public String generarHistorialGrupo(String nombreComunidad, String tipoGrupo, String nombreGrupo) {
-        String historial = moderadorService.generarHistorialGrupo(nombreComunidad, tipoGrupo, nombreGrupo);
+        String historial = servicioModeracion.generarHistorialGrupo(nombreComunidad, tipoGrupo, nombreGrupo);
         incrementarOperacion("generacion_historial");
         
         System.out.println("👤 MODERACIÓN MANUAL: Historial generado por " + this.nombre);
@@ -147,7 +152,7 @@ public class ModeradorManual extends Moderador {
      */
     public List<String> obtenerNombresComunidades() {
         incrementarOperacion("consulta_comunidades");
-        return moderadorService.obtenerNombresComunidades();
+        return servicioModeracion.obtenerNombresComunidades();
     }
 
     /**
@@ -155,7 +160,7 @@ public class ModeradorManual extends Moderador {
      */
     public List<String> obtenerGruposDeComunidad(String nombreComunidad, String tipoGrupo) {
         incrementarOperacion("consulta_grupos");
-        return moderadorService.obtenerGruposDeComunidad(nombreComunidad, tipoGrupo);
+        return servicioModeracion.obtenerGruposDeComunidad(nombreComunidad, tipoGrupo);
     }
 
     /**
@@ -328,8 +333,8 @@ public class ModeradorManual extends Moderador {
 
     // Getters específicos
     
-    public ModeradorService getModeradorService() {
-        return moderadorService;
+    public ServicioModeracion getServicioModeracion() {
+        return servicioModeracion;
     }
 
     public int getOperacionesRealizadas() {

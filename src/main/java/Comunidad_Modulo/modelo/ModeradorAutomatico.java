@@ -1,8 +1,8 @@
 package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
-import Comunidad_Modulo.servicios.ModeracionService;
-import Comunidad_Modulo.servicios.ModeracionService.ResultadoModeracion;
+import Comunidad_Modulo.servicios.ServicioModeracion;
+import Comunidad_Modulo.servicios.ServicioModeracion.ResultadoModeracion;
 
 import java.util.List;
 
@@ -12,13 +12,14 @@ import java.util.List;
  */
 public class ModeradorAutomatico extends Moderador {
     
-    private ModeracionService moderacionService;
+    private ServicioModeracion servicioModeracion;
     private int mensajesModerados;
     private int sancionesAplicadas;
 
     public ModeradorAutomatico(String nombre, String username) {
         super(nombre, username);
-        this.moderacionService = new ModeracionService();
+        // NO inicializar ServicioModeracion aquí para evitar dependencia circular
+        this.servicioModeracion = null; // Se inicializará cuando sea necesario
         this.mensajesModerados = 0;
         this.sancionesAplicadas = 0;
     }
@@ -31,12 +32,12 @@ public class ModeradorAutomatico extends Moderador {
     
     @Override
     public boolean moderarContenido(String contenido, UsuarioComunidad autor) {
-        ResultadoModeracion resultado = moderacionService.moderarMensaje(contenido, autor, this.nombre);
+        ResultadoModeracion resultado = getServicioModeracion().moderarMensaje(contenido, autor, this.nombre);
         mensajesModerados++;
         
         if (!resultado.isAprobado()) {
             sancionesAplicadas++;
-            System.out.println("🤖 MODERACIÓN AUTOMÁTICA: " + resultado.getMensaje());
+            System.out.println("MODERACION AUTOMATICA: " + resultado.getMensaje());
         }
         
         return resultado.isAprobado();
@@ -44,10 +45,10 @@ public class ModeradorAutomatico extends Moderador {
 
     @Override
     public String obtenerEstadisticas() {
-        ModeracionService.EstadisticasModeración stats = moderacionService.getEstadisticas();
+        ServicioModeracion.EstadisticasModeración stats = getServicioModeracion().getEstadisticas();
         StringBuilder estadisticas = new StringBuilder();
         
-        estadisticas.append("📊 === ESTADÍSTICAS MODERACIÓN AUTOMÁTICA ===\n");
+        estadisticas.append("=== ESTADISTICAS MODERACION AUTOMATICA ===\n");
         estadisticas.append("Moderador: ").append(this.nombre).append("\n");
         estadisticas.append("Mensajes moderados: ").append(mensajesModerados).append("\n");
         estadisticas.append("Sanciones aplicadas: ").append(sancionesAplicadas).append("\n");
@@ -84,7 +85,7 @@ public class ModeradorAutomatico extends Moderador {
                 }
                 break;
             default:
-                System.out.println("⚠️ Acción de moderación automática no reconocida: " + tipoAccion);
+                System.out.println("Acción de moderación automática no reconocida: " + tipoAccion);
         }
     }
 
@@ -94,7 +95,7 @@ public class ModeradorAutomatico extends Moderador {
      * Modera un mensaje automáticamente antes de publicarlo
      */
     public ResultadoModeracion moderarMensaje(String contenido, UsuarioComunidad autor) {
-        return moderacionService.moderarMensaje(contenido, autor, this.nombre);
+        return getServicioModeracion().moderarMensaje(contenido, autor, this.nombre);
     }
 
     /**
@@ -102,7 +103,7 @@ public class ModeradorAutomatico extends Moderador {
      */
     public SancionUsuario aplicarSancionAutomatica(UsuarioComunidad usuario, String razon, int duracionMinutos) {
         sancionesAplicadas++;
-        return moderacionService.aplicarSancion(usuario, razon, duracionMinutos, this.nombre);
+        return getServicioModeracion().aplicarSancion(usuario, razon, duracionMinutos, this.nombre);
     }
 
     /**
@@ -110,42 +111,42 @@ public class ModeradorAutomatico extends Moderador {
      */
     public SancionUsuario aplicarSancionManual(UsuarioComunidad usuario, String razon, int duracionMinutos) {
         sancionesAplicadas++;
-        return moderacionService.aplicarSancion(usuario, razon, duracionMinutos, this.nombre + " (Manual)");
+        return getServicioModeracion().aplicarSancion(usuario, razon, duracionMinutos, this.nombre + " (Manual)");
     }
 
     /**
      * Verifica si un usuario está sancionado
      */
     public boolean usuarioEstaSancionado(UsuarioComunidad usuario) {
-        return moderacionService.usuarioEstaSancionado(usuario);
+        return getServicioModeracion().usuarioEstaSancionado(usuario);
     }
 
     /**
      * Levanta una sanción de un usuario
      */
     public boolean levantarSancion(UsuarioComunidad usuario) {
-        return moderacionService.levantarSancion(usuario, this.nombre);
+        return getServicioModeracion().levantarSancion(usuario, this.nombre);
     }
 
     /**
      * Obtiene información de la sanción activa de un usuario
      */
     public SancionUsuario getSancionActiva(UsuarioComunidad usuario) {
-        return moderacionService.obtenerSancionActiva(usuario);
+        return getServicioModeracion().obtenerSancionActiva(usuario);
     }
 
     /**
      * Obtiene todas las sanciones activas
      */
     public List<SancionUsuario> getSancionesActivas() {
-        return moderacionService.getSancionesActivas();
+        return getServicioModeracion().getSancionesActivas();
     }
 
     /**
      * Obtiene el historial de sanciones de un usuario
      */
     public List<SancionUsuario> getHistorialSanciones(UsuarioComunidad usuario) {
-        return moderacionService.getHistorialSanciones(usuario);
+        return getServicioModeracion().getHistorialSanciones(usuario);
     }
 
     /**
@@ -155,9 +156,9 @@ public class ModeradorAutomatico extends Moderador {
         boolean sancionado = usuarioEstaSancionado(usuario);
         if (sancionado) {
             SancionUsuario sancion = getSancionActiva(usuario);
-            System.out.println("🚫 Usuario " + usuario.getUsername() + " está sancionado: " + sancion.getRazon());
+            System.out.println("Usuario " + usuario.getUsername() + " está sancionado: " + sancion.getRazon());
         } else {
-            System.out.println("✅ Usuario " + usuario.getUsername() + " sin sanciones activas");
+            System.out.println("Usuario " + usuario.getUsername() + " sin sanciones activas");
         }
     }
 
@@ -165,7 +166,7 @@ public class ModeradorAutomatico extends Moderador {
      * Ejecuta un análisis automático de todo el contenido de un foro
      */
     public void analizarForoCompleto(ForoGeneral foro) {
-        System.out.println("🔍 Iniciando análisis automático del foro...");
+        System.out.println("Iniciando análisis automático del foro...");
         
         // Analizar grupos de discusión
         for (GrupoDiscusion grupo : foro.getGruposDiscusion()) {
@@ -177,16 +178,16 @@ public class ModeradorAutomatico extends Moderador {
             analizarGrupoCompartir(grupo);
         }
         
-        System.out.println("✅ Análisis automático completado");
+        System.out.println("Análisis automático completado");
     }
 
     private void analizarGrupoDiscusion(GrupoDiscusion grupo) {
-        System.out.println("📝 Analizando grupo de discusión: " + grupo.getTitulo());
+        System.out.println("Analizando grupo de discusión: " + grupo.getTitulo());
         // Aquí se implementaría la lógica de análisis automático
     }
 
     private void analizarGrupoCompartir(GrupoCompartir grupo) {
-        System.out.println("📤 Analizando grupo de compartir: " + grupo.getTitulo());
+        System.out.println("Analizando grupo de compartir: " + grupo.getTitulo());
         // Aquí se implementaría la lógica de análisis automático
     }
 
@@ -194,7 +195,7 @@ public class ModeradorAutomatico extends Moderador {
     
     @Override
     protected void onComunidadAsignada(Comunidad comunidad) {
-        System.out.println("🤖 Moderador automático asignado a comunidad: " + comunidad.getNombre());
+        System.out.println("Moderador automatico asignado a comunidad: " + comunidad.getNombre());
         // Iniciar monitoreo automático
         if (comunidad.getForoGeneral() != null) {
             analizarForoCompleto(comunidad.getForoGeneral());
@@ -208,28 +209,36 @@ public class ModeradorAutomatico extends Moderador {
 
     @Override
     protected void ejecutarSupervisionChats(List<ChatPrivado> chats) {
-        System.out.println("🤖 Supervisión automática de " + chats.size() + " chats iniciada");
+        System.out.println("Supervision automatica de " + chats.size() + " chats iniciada");
         for (ChatPrivado chat : chats) {
             analizarChat(chat);
         }
     }
 
     private void analizarChat(ChatPrivado chat) {
-        System.out.println("💬 Analizando chat: " + chat.getIdChat());
+        System.out.println("Analizando chat: " + chat.getIdChat());
         // Implementar análisis automático de mensajes del chat
     }
 
     /**
      * Obtiene estadísticas detalladas de moderación
      */
-    public ModeracionService.EstadisticasModeración getEstadisticasModeración() {
-        return moderacionService.getEstadisticas();
+    public ServicioModeracion.EstadisticasModeración getEstadisticasModeración() {
+        return getServicioModeracion().getEstadisticas();
     }
 
     // Getters específicos
     
-    public ModeracionService getModeracionService() {
-        return moderacionService;
+    public ServicioModeracion getServicioModeracion() {
+        if (this.servicioModeracion == null) {
+            try {
+                this.servicioModeracion = new ServicioModeracion();
+            } catch (Exception e) {
+                System.err.println("No se pudo inicializar ServicioModeracion en ModeradorAutomatico: " + e.getMessage());
+                return null;
+            }
+        }
+        return servicioModeracion;
     }
 
     public int getMensajesModerados() {

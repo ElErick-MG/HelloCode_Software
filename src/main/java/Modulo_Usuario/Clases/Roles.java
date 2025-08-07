@@ -2,5 +2,7 @@ package Modulo_Usuario.Clases;
 
 public enum Roles {
     USUARIO,
-    ADMINISTRADOR
+    MODERADOR,
+    ADMINISTRADOR,
+    SUPER_ADMINISTRADOR
 }

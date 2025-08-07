@@ -8,12 +8,34 @@ import java.util.UUID;
 /**
  * Clase padre abstracta que representa a un moderador genérico del sistema.
  * Define la funcionalidad común que comparten todos los tipos de moderadores.
+ * 
+ * PATRÓN FACTORY INTEGRADO:
+ * Esta clase incluye métodos factory estáticos que encapsulan la creación
+ * de diferentes tipos de moderadores, eliminando la necesidad de una clase
+ * Factory separada y manteniendo el UML más limpio.
+ * 
+ * TIPOS DE MODERADORES:
+ * - ModeradorAutomatico: Moderación automática con filtros y reglas
+ * - ModeradorManual: Moderación manual con intervención humana
+ * 
+ * USO:
+ * - Moderador.crear(TipoModerador.AUTOMATICO, "nombre", "username")
+ * - Moderador.crearAutomaticoPorDefecto("ComunidadX")
+ * - Moderador.crearManualPorDefecto("AdminY")
  */
 public abstract class Moderador {
     protected String idModerador;
     protected String nombre;
     protected String username;
     protected List<Comunidad> comunidadesGestionadas;
+
+    /**
+     * Enum para los tipos de moderadores disponibles
+     */
+    public enum TipoModerador {
+        AUTOMATICO,
+        MANUAL
+    }
 
     public Moderador(String nombre, String username) {
         this.idModerador = UUID.randomUUID().toString();
@@ -25,6 +47,88 @@ public abstract class Moderador {
     // Constructor existente para mantener compatibilidad
     public Moderador(String nombre) {
         this(nombre, "mod_" + System.currentTimeMillis()); // Username único por defecto
+    }
+
+    // ==========================================
+    // MÉTODOS FACTORY ESTÁTICOS
+    // ==========================================
+    
+    /**
+     * Crea un moderador del tipo especificado
+     * 
+     * @param tipo Tipo de moderador a crear
+     * @param nombre Nombre del moderador
+     * @param username Nombre de usuario del moderador
+     * @return Instancia del moderador creado
+     */
+    public static Moderador crear(TipoModerador tipo, String nombre, String username) {
+        switch (tipo) {
+            case AUTOMATICO:
+                return new ModeradorAutomatico(nombre, username);
+            case MANUAL:
+                return new ModeradorManual(nombre, username);
+            default:
+                throw new IllegalArgumentException("Tipo de moderador no soportado: " + tipo);
+        }
+    }
+
+    /**
+     * Crea un moderador del tipo especificado con username automático
+     * 
+     * @param tipo Tipo de moderador a crear
+     * @param nombre Nombre del moderador
+     * @return Instancia del moderador creado
+     */
+    public static Moderador crear(TipoModerador tipo, String nombre) {
+        switch (tipo) {
+            case AUTOMATICO:
+                return new ModeradorAutomatico(nombre);
+            case MANUAL:
+                return new ModeradorManual(nombre);
+            default:
+                throw new IllegalArgumentException("Tipo de moderador no soportado: " + tipo);
+        }
+    }
+
+    /**
+     * Crea un moderador automático por defecto para una comunidad
+     */
+    public static ModeradorAutomatico crearAutomaticoPorDefecto(String nombreComunidad) {
+        return new ModeradorAutomatico("AutoMod_" + nombreComunidad, "automod_" + nombreComunidad.toLowerCase());
+    }
+
+    /**
+     * Crea un moderador manual por defecto para administración
+     */
+    public static ModeradorManual crearManualPorDefecto(String nombreAdmin) {
+        return new ModeradorManual("Admin_" + nombreAdmin, "admin_" + nombreAdmin.toLowerCase());
+    }
+
+    /**
+     * Obtiene información sobre los tipos de moderadores disponibles
+     */
+    public static String obtenerInformacionTipos() {
+        StringBuilder info = new StringBuilder();
+        info.append("🔧 === TIPOS DE MODERADORES DISPONIBLES ===\n\n");
+        
+        info.append("🤖 MODERADOR AUTOMÁTICO:\n");
+        info.append("  - Moderación de contenido en tiempo real\n");
+        info.append("  - Aplicación automática de sanciones\n");
+        info.append("  - Análisis de sentimientos y filtros\n");
+        info.append("  - Estadísticas de moderación automática\n\n");
+        
+        info.append("👤 MODERADOR MANUAL:\n");
+        info.append("  - Gestión administrativa del sistema\n");
+        info.append("  - Eliminación de usuarios y comunidades\n");
+        info.append("  - Generación de reportes detallados\n");
+        info.append("  - Revisión manual de contenido\n\n");
+        
+        info.append("💡 USO RECOMENDADO:\n");
+        info.append("  - Automático: Para comunidades con alto volumen de mensajes\n");
+        info.append("  - Manual: Para administración y casos especiales\n");
+        info.append("  - Híbrido: Usar ambos tipos en la misma comunidad\n");
+        
+        return info.toString();
     }
 
     // Getters y setters comunes

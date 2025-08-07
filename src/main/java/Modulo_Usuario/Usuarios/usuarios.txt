@@ -1,6 +1,6 @@
 usuario1;pass1;Juan;juan@email.com;100;USUARIO
 comunidad1;pass2;Ana;ana@email.com;200;USUARIO
-admin1;adminpass;Carlos;carlos@email.com;300;USUARIO
+admin1;adminpass;Carlos;carlos@email.com;300;ADMINISTRADOR
 Luis;123456;luis23;lagh@yahoo.com;0;USUARIO
 Prueba;123456;Prueba;prueba@prueba.com;0;USUARIO
 Pr;123;pr;pr@pr.com;0;USUARIO
@@ -11,3 +11,7 @@ Evelin;123456;Evelin Rocha;evelinrocha@epn.edu;0;USUARIO
 Jose;1234567;Jose;joserocapod0842@gmail.com;0;USUARIO
 esteban;esteban;esteban;esteban@god.ec;0;USUARIO
 tarek;tarek;tarek;tarek@god.com;0;ADMINISTRADOR
+moderador1;mod123;Maria Moderadora;maria.mod@comunidad.com;0;MODERADOR
+moderador2;mod456;Pedro Moderador;pedro.mod@comunidad.com;0;MODERADOR
+superadmin;super123;Super Administrador;super@sistema.com;0;SUPER_ADMINISTRADOR
+admin;admin123;Administrador Sistema;admin@sistema.com;0;SUPER_ADMINISTRADOR

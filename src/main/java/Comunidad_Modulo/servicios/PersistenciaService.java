@@ -120,7 +120,7 @@ public class PersistenciaService {
 
                         // Asignar moderador personalizado si es diferente al automático
                         if (!nombreModerador.equals("ModeradorBot_" + nombre)) {
-                            Moderador moderadorPersonalizado = new Moderador(nombreModerador);
+                            ModeradorManual moderadorPersonalizado = new ModeradorManual(nombreModerador);
                             moderadorPersonalizado.asignarComunidad(comunidad);
                             // La comunidad ya tiene un moderador automático, así que lo mantenemos
                         }

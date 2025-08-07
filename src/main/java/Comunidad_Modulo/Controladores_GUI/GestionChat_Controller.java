@@ -334,16 +334,26 @@ public class GestionChat_Controller implements Initializable {
 
             String contenido = mensajeResult.get().trim();
 
-            // Capturar el estado inicial del moderador para detectar nuevas sanciones
+            // Obtener el moderador automático para análisis de contenido en tiempo real
             Moderador moderador = contexto.getComunidadActual().getModerador();
-            List<SancionUsuario> sancionesAnteriores = new ArrayList<>(moderador.getSancionesActivas());
-            boolean estabaSancionado = moderador.usuarioEstaSancionado(emisorFinal);
+            
+            // Verificar que sea un moderador automático para este contexto
+            if (!(moderador instanceof ModeradorAutomatico)) {
+                mostrarMensajeError("⚠️ No hay moderador automático disponible para analizar el contenido.");
+                return;
+            }
+            
+            ModeradorAutomatico moderadorAutomatico = (ModeradorAutomatico) moderador;
+            
+            // Capturar el estado inicial para detectar nuevas sanciones
+            List<SancionUsuario> sancionesAnteriores = new ArrayList<>(moderadorAutomatico.getSancionesActivas());
+            boolean estabaSancionado = moderadorAutomatico.usuarioEstaSancionado(emisorFinal);
 
-            // Enviar mensaje con moderación
-            boolean mensajeEnviado = chat.enviarMensaje(contenido, emisorFinal, moderador);
+            // Enviar mensaje con moderación automática
+            boolean mensajeEnviado = chat.enviarMensaje(contenido, emisorFinal, moderadorAutomatico);
 
             // Detectar nuevas sanciones aplicadas durante el proceso
-            List<SancionUsuario> sancionesActuales = moderador.getSancionesActivas();
+            List<SancionUsuario> sancionesActuales = moderadorAutomatico.getSancionesActivas();
             boolean seAplicoNuevaSancion = sancionesActuales.size() > sancionesAnteriores.size();
 
             if (seAplicoNuevaSancion) {
@@ -367,7 +377,7 @@ public class GestionChat_Controller implements Initializable {
                 }
             } else if (!mensajeEnviado && estabaSancionado) {
                 // Usuario ya estaba sancionado
-                SancionUsuario sancion = moderador.getSancionActiva(emisorFinal);
+                SancionUsuario sancion = moderadorAutomatico.getSancionActiva(emisorFinal);
                 String notificacion = String.format("🚫 MENSAJE BLOQUEADO - Usuario %s está sancionado. Tiempo restante: %d minutos\n   Razón: %s",
                         emisorFinal.getNombre(), sancion.getMinutosRestantes(), sancion.getRazon());
                 agregarNotificacionModerador(notificacion);

@@ -1,43 +1,33 @@
 package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
-import Comunidad_Modulo.servicios.ModeracionService;
-import Comunidad_Modulo.servicios.ModeracionService.ResultadoModeracion;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Moderador {
-    private String idModerador;
-    private String nombre;
-    private String username; // Nuevo campo para el nombre de usuario
-    private List<Comunidad> comunidadesGestionadas;
-    private ModeracionService moderacionService;
+/**
+ * Clase padre abstracta que representa a un moderador genérico del sistema.
+ * Define la funcionalidad común que comparten todos los tipos de moderadores.
+ */
+public abstract class Moderador {
+    protected String idModerador;
+    protected String nombre;
+    protected String username;
+    protected List<Comunidad> comunidadesGestionadas;
 
     public Moderador(String nombre, String username) {
         this.idModerador = UUID.randomUUID().toString();
         this.nombre = nombre;
-        this.username = username; // Inicializar el nombre de usuario
+        this.username = username;
         this.comunidadesGestionadas = new ArrayList<>();
-        this.moderacionService = new ModeracionService();
     }
 
     // Constructor existente para mantener compatibilidad
     public Moderador(String nombre) {
-        this(nombre, "mod"); // Por defecto, el username será "mod"
+        this(nombre, "mod_" + System.currentTimeMillis()); // Username único por defecto
     }
 
-    // Añadir getter y setter para username
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    // Getters y setters
+    // Getters y setters comunes
     public String getIdModerador() {
         return idModerador;
     }
@@ -50,134 +40,136 @@ public class Moderador {
         this.nombre = nombre;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public List<Comunidad> getComunidadesGestionadas() {
         return new ArrayList<>(comunidadesGestionadas);
     }
 
-    // Métodos de negocio
+    // Métodos de gestión de comunidades (común para todos los moderadores)
     public void asignarComunidad(Comunidad comunidad) {
         if (!comunidadesGestionadas.contains(comunidad)) {
             comunidadesGestionadas.add(comunidad);
+            onComunidadAsignada(comunidad);
         }
     }
 
     public void removerComunidad(Comunidad comunidad) {
-        comunidadesGestionadas.remove(comunidad);
+        if (comunidadesGestionadas.remove(comunidad)) {
+            onComunidadRemovida(comunidad);
+        }
     }
 
+    // Métodos básicos de moderación comunes
     public void moderarForo(ForoGeneral foro) {
-        // Lógica de moderación del foro
         System.out.println("Moderando foro: " + foro.toString());
+        ejecutarModeracionForo(foro);
     }
 
     public void supervisarChats(List<ChatPrivado> chats) {
-        // Lógica de supervisión de chats
         System.out.println("Supervisando " + chats.size() + " chats privados");
+        ejecutarSupervisionChats(chats);
     }
 
     public void cerrarHilo(HiloDiscusion hilo) {
         hilo.cerrar();
         System.out.println("Hilo cerrado por moderador: " + hilo.getTitulo());
+        onHiloCerrado(hilo);
     }
 
     public void eliminarMensaje(ChatPrivado chat, String idMensaje) {
-        // Lógica para eliminar mensaje (simulada)
         System.out.println("Mensaje eliminado por moderador en chat: " + chat.getIdChat());
+        ejecutarEliminacionMensaje(chat, idMensaje);
     }
 
     public void suspenderUsuario(UsuarioComunidad usuario) {
-        // Lógica para suspender usuario (simulada)
         System.out.println("Usuario suspendido: " + usuario.getNombre());
+        ejecutarSuspensionUsuario(usuario);
     }
 
-    // === NUEVOS MÉTODOS DE MODERACIÓN AUTOMÁTICA ===
-
+    // Métodos abstractos que deben implementar las clases hijas
+    
     /**
-     * Modera un mensaje automáticamente antes de publicarlo
+     * Método abstracto para moderar contenido específico según el tipo de moderador
      */
-    public ResultadoModeracion moderarMensaje(String contenido, UsuarioComunidad autor) {
-        return moderacionService.moderarMensaje(contenido, autor, this.nombre);
-    }
-
+    public abstract boolean moderarContenido(String contenido, UsuarioComunidad autor);
+    
     /**
-     * Aplica una sanción manual a un usuario
+     * Método abstracto para obtener estadísticas específicas del tipo de moderador
      */
-    public SancionUsuario aplicarSancionManual(UsuarioComunidad usuario, String razon, int duracionMinutos) {
-        return moderacionService.aplicarSancion(usuario, razon, duracionMinutos, this.nombre);
-    }
-
+    public abstract String obtenerEstadisticas();
+    
     /**
-     * Levanta una sanción de un usuario
+     * Método abstracto para ejecutar acciones específicas de moderación
      */
-    public boolean levantarSancion(UsuarioComunidad usuario) {
-        return moderacionService.levantarSancion(usuario, this.nombre);
+    public abstract void ejecutarAccionModeración(String tipoAccion, Object... parametros);
+
+    // Métodos template (hooks) que las clases hijas pueden sobrescribir
+    
+    protected void onComunidadAsignada(Comunidad comunidad) {
+        // Hook para cuando se asigna una comunidad
+    }
+    
+    protected void onComunidadRemovida(Comunidad comunidad) {
+        // Hook para cuando se remueve una comunidad
+    }
+    
+    protected void onHiloCerrado(HiloDiscusion hilo) {
+        // Hook para cuando se cierra un hilo
+    }
+    
+    protected void ejecutarModeracionForo(ForoGeneral foro) {
+        // Implementación base, las clases hijas pueden sobrescribir
+    }
+    
+    protected void ejecutarSupervisionChats(List<ChatPrivado> chats) {
+        // Implementación base, las clases hijas pueden sobrescribir
+    }
+    
+    protected void ejecutarEliminacionMensaje(ChatPrivado chat, String idMensaje) {
+        // Implementación base, las clases hijas pueden sobrescribir
+    }
+    
+    protected void ejecutarSuspensionUsuario(UsuarioComunidad usuario) {
+        // Implementación base, las clases hijas pueden sobrescribir
     }
 
-    /**
-     * Verifica si un usuario está sancionado
-     */
-    public boolean usuarioEstaSancionado(UsuarioComunidad usuario) {
-        return moderacionService.usuarioEstaSancionado(usuario);
+    // Métodos de utilidad comunes
+    public boolean tieneComunidadAsignada(String nombreComunidad) {
+        return comunidadesGestionadas.stream()
+                .anyMatch(c -> c.getNombre().equalsIgnoreCase(nombreComunidad));
     }
 
-    /**
-     * Obtiene información de la sanción activa de un usuario
-     */
-    public SancionUsuario getSancionActiva(UsuarioComunidad usuario) {
-        return moderacionService.obtenerSancionActiva(usuario);
+    public int getNumeroComunidadesGestionadas() {
+        return comunidadesGestionadas.size();
     }
 
-    /**
-     * Obtiene todas las sanciones activas
-     */
-    public List<SancionUsuario> getSancionesActivas() {
-        return moderacionService.getSancionesActivas();
-    }
-
-    /**
-     * Obtiene el historial de sanciones de un usuario
-     */
-    public List<SancionUsuario> getHistorialSanciones(UsuarioComunidad usuario) {
-        return moderacionService.getHistorialSanciones(usuario);
-    }
-
-    /**
-     * Obtiene estadísticas de moderación
-     */
-    public ModeracionService.EstadisticasModeración getEstadisticasModeración() {
-        return moderacionService.getEstadisticas();
-    }
-
-    /**
-     * Método auxiliar para mostrar el estado de moderación
-     */
-    public void mostrarEstadoModeración() {
-        System.out.println("\n🛡️ === ESTADO DE MODERACIÓN ===");
-        System.out.println("Moderador: " + this.nombre);
-
-        ModeracionService.EstadisticasModeración stats = getEstadisticasModeración();
-        System.out.println(stats.toString());
-
-        List<SancionUsuario> sancionesActivas = getSancionesActivas();
-        if (!sancionesActivas.isEmpty()) {
-            System.out.println("\n🚫 Sanciones activas:");
-            for (SancionUsuario sancion : sancionesActivas) {
-                System.out.println("  - " + sancion.toString());
-            }
-        } else {
-            System.out.println("\n✅ No hay sanciones activas");
-        }
-        System.out.println("=".repeat(35));
-    }
-
-    // Getter para el servicio de moderación (por si se necesita acceso directo)
-    public ModeracionService getModeracionService() {
-        return moderacionService;
+    public boolean estáActivo() {
+        return !comunidadesGestionadas.isEmpty();
     }
 
     @Override
     public String toString() {
-        return String.format("Moderador: %s (gestiona %d comunidades)",
-                           nombre, comunidadesGestionadas.size());
+        return String.format("Moderador: %s [%s] (gestiona %d comunidades)",
+                           nombre, getClass().getSimpleName(), comunidadesGestionadas.size());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Moderador moderador = (Moderador) obj;
+        return idModerador.equals(moderador.idModerador);
+    }
+
+    @Override
+    public int hashCode() {
+        return idModerador.hashCode();
     }
 }

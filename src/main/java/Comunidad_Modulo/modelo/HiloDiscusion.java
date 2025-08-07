@@ -2,9 +2,7 @@ package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
 import Comunidad_Modulo.enums.EstadoHilo;
-import Comunidad_Modulo.servicios.ModeracionService.ResultadoModeracion;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +18,6 @@ public class HiloDiscusion {
     private List<Respuesta> respuestas;
     private Map<String, Integer> votosUsuarios;
     private LocalDateTime fechaCreacion;
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // Constructor para crear un nuevo hilo
     public HiloDiscusion(String idHilo, String titulo, String problema, UsuarioComunidad autor) {
@@ -100,25 +97,15 @@ public class HiloDiscusion {
             return false;
         }
 
-        // Verificar si el usuario está sancionado
-        if (moderador.usuarioEstaSancionado(autorRespuesta)) {
-            SancionUsuario sancion = moderador.getSancionActiva(autorRespuesta);
-            System.out.println("🚫 RESPUESTA BLOQUEADA - Usuario " + autorRespuesta.getNombre() +
-                    " está sancionado. Tiempo restante: " +
-                    sancion.getMinutosRestantes() + " minutos");
-            System.out.println("   Razón: " + sancion.getRazon());
-            return false;
-        }
+        // Moderar el contenido de la respuesta usando el método abstracto
+        boolean contenidoAprobado = moderador.moderarContenido(contenido, autorRespuesta);
 
-        // Moderar el contenido de la respuesta
-        ResultadoModeracion resultado = moderador.moderarMensaje(contenido, autorRespuesta);
-
-        if (!resultado.isAprobado()) {
+        if (!contenidoAprobado) {
             System.out.println("🚫 RESPUESTA BLOQUEADA EN HILO DE DISCUSIÓN");
             System.out.println("   Usuario: " + autorRespuesta.getNombre());
             System.out.println("   Hilo: " + this.titulo);
             System.out.println("   Contenido: \"" + contenido + "\"");
-            System.out.println("   Razón: " + resultado.getMensaje());
+            System.out.println("   Razón: Contenido no aprobado por moderación");
             return false;
         }
 

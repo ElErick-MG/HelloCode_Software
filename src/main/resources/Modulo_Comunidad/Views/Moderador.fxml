@@ -147,6 +147,7 @@
                    -fx-cursor: hand;
                    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 2);">
             </Button>
+            <Region prefWidth="30.0"/>
             <Button fx:id="btnVolver"
                     text="Volver"
                     onAction="#volver"

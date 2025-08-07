@@ -1,7 +1,6 @@
 package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
-import Comunidad_Modulo.servicios.ModeracionService.ResultadoModeracion;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,24 +43,14 @@ public class ChatPrivado {
             throw new IllegalArgumentException("El usuario no es participante del chat");
         }
         
-        // Verificar si el usuario está sancionado
-        if (moderador.usuarioEstaSancionado(emisor)) {
-            SancionUsuario sancion = moderador.getSancionActiva(emisor);
-            System.out.println("🚫 MENSAJE BLOQUEADO - Usuario " + emisor.getNombre() + 
-                             " está sancionado. Tiempo restante: " + 
-                             sancion.getMinutosRestantes() + " minutos");
-            System.out.println("   Razón: " + sancion.getRazon());
-            return false;
-        }
+        // Moderar el contenido del mensaje usando el método abstracto
+        boolean contenidoAprobado = moderador.moderarContenido(contenido, emisor);
         
-        // Moderar el contenido del mensaje
-        ResultadoModeracion resultado = moderador.moderarMensaje(contenido, emisor);
-        
-        if (!resultado.isAprobado()) {
+        if (!contenidoAprobado) {
             System.out.println("🚫 MENSAJE BLOQUEADO EN CHAT PRIVADO");
             System.out.println("   Usuario: " + emisor.getNombre());
             System.out.println("   Contenido: \"" + contenido + "\"");
-            System.out.println("   Razón: " + resultado.getMensaje());
+            System.out.println("   Razón: Contenido no aprobado por moderación");
             return false;
         }
         

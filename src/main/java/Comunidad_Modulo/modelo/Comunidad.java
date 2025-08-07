@@ -28,7 +28,7 @@ public class Comunidad {
         this.fechaCreacion = LocalDateTime.now();
         
         // Inicializar moderador automático para la comunidad
-        this.moderador = new Moderador("ModeradorBot_" + nombre);
+        this.moderador = new ModeradorAutomatico("ModeradorBot_" + nombre, "bot_" + nombre.toLowerCase());
         this.moderador.asignarComunidad(this);
     }
     

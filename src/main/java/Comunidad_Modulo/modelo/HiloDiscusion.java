@@ -2,7 +2,7 @@ package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
 import Comunidad_Modulo.enums.EstadoHilo;
-import Comunidad_Modulo.servicios.ModeracionService.ResultadoModeracion;
+import Comunidad_Modulo.modelo.IModerador.ResultadoModeracion;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public class HiloDiscusion {
     }
 
     // Métodos de negocio
-    public boolean responder(String contenido, UsuarioComunidad autorRespuesta, Moderador moderador) {
+    public boolean responder(String contenido, UsuarioComunidad autorRespuesta, IModerador moderador) {
         if (estado == EstadoHilo.CERRADO) {
             System.out.println("🚫 No se puede responder a un hilo cerrado");
             return false;
@@ -111,7 +111,7 @@ public class HiloDiscusion {
         }
 
         // Moderar el contenido de la respuesta
-        ResultadoModeracion resultado = moderador.moderarMensaje(contenido, autorRespuesta);
+        ResultadoModeracion resultado = moderador.procesarContenido(contenido, autorRespuesta);
 
         if (!resultado.isAprobado()) {
             System.out.println("🚫 RESPUESTA BLOQUEADA EN HILO DE DISCUSIÓN");

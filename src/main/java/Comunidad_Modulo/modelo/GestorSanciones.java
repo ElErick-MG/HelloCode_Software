@@ -1,9 +1,6 @@
-package Comunidad_Modulo.servicios;
+package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
-import Comunidad_Modulo.modelo.SancionUsuario;
-import Comunidad_Modulo.utilidades.FiltroContenido;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,9 +8,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Servicio para gestionar la moderación automática y manual de contenido.
+ * Clase responsable de gestionar todas las sanciones de usuarios.
+ * Aplica el principio de Single Responsibility - solo maneja sanciones.
  */
-public class ModeracionService {
+public class GestorSanciones {
     
     // Mapa de usuario -> lista de sanciones
     private Map<String, List<SancionUsuario>> sancionesPorUsuario;
@@ -21,46 +19,9 @@ public class ModeracionService {
     // Lista de todas las sanciones activas
     private List<SancionUsuario> sancionesActivas;
     
-    public ModeracionService() {
+    public GestorSanciones() {
         this.sancionesPorUsuario = new HashMap<>();
         this.sancionesActivas = new ArrayList<>();
-    }
-    
-    /**
-     * Modera un mensaje automáticamente
-     */
-    public ResultadoModeracion moderarMensaje(String contenido, UsuarioComunidad autor, String moderadorResponsable) {
-        // Verificar si el usuario ya está sancionado
-        if (usuarioEstaSancionado(autor)) {
-            SancionUsuario sancionActiva = obtenerSancionActiva(autor);
-            return new ResultadoModeracion(
-                false, 
-                "Usuario sancionado. Tiempo restante: " + sancionActiva.getMinutosRestantes() + " minutos",
-                sancionActiva
-            );
-        }
-        
-        // Analizar el contenido
-        FiltroContenido.ResultadoModeración resultado = FiltroContenido.analizarContenido(contenido);
-        
-        if (resultado.esInapropiado()) {
-            // Aplicar sanción
-            SancionUsuario sancion = aplicarSancion(
-                autor, 
-                resultado.getRazonSancion(), 
-                resultado.getDuracionSancionMinutos(),
-                moderadorResponsable
-            );
-            
-            return new ResultadoModeracion(
-                false,
-                "Mensaje bloqueado. " + resultado.getRazonSancion() + 
-                ". Sanción de " + resultado.getDuracionSancionMinutos() + " minutos aplicada.",
-                sancion
-            );
-        }
-        
-        return new ResultadoModeracion(true, "Mensaje aprobado", null);
     }
     
     /**
@@ -132,7 +93,7 @@ public class ModeracionService {
     /**
      * Obtiene estadísticas de moderación
      */
-    public EstadisticasModeración getEstadisticas() {
+    public IModerador.EstadisticasModeración getEstadisticas() {
         int totalSanciones = sancionesPorUsuario.values().stream()
                 .mapToInt(List::size)
                 .sum();
@@ -146,50 +107,13 @@ public class ModeracionService {
                     Collectors.collectingAndThen(Collectors.counting(), Math::toIntExact)
                 ));
         
-        return new EstadisticasModeración(totalSanciones, sancionesActivas, tiposSanciones);
+        return new IModerador.EstadisticasModeración(totalSanciones, sancionesActivas, tiposSanciones);
     }
     
     /**
-     * Clase para encapsular el resultado de la moderación
+     * Limpia sanciones expiradas
      */
-    public static class ResultadoModeracion {
-        private final boolean aprobado;
-        private final String mensaje;
-        private final SancionUsuario sancion;
-        
-        public ResultadoModeracion(boolean aprobado, String mensaje, SancionUsuario sancion) {
-            this.aprobado = aprobado;
-            this.mensaje = mensaje;
-            this.sancion = sancion;
-        }
-        
-        public boolean isAprobado() { return aprobado; }
-        public String getMensaje() { return mensaje; }
-        public SancionUsuario getSancion() { return sancion; }
-    }
-    
-    /**
-     * Clase para estadísticas de moderación
-     */
-    public static class EstadisticasModeración {
-        private final int totalSanciones;
-        private final int sancionesActivas;
-        private final Map<String, Integer> tiposSanciones;
-        
-        public EstadisticasModeración(int totalSanciones, int sancionesActivas, Map<String, Integer> tiposSanciones) {
-            this.totalSanciones = totalSanciones;
-            this.sancionesActivas = sancionesActivas;
-            this.tiposSanciones = tiposSanciones;
-        }
-        
-        public int getTotalSanciones() { return totalSanciones; }
-        public int getSancionesActivas() { return sancionesActivas; }
-        public Map<String, Integer> getTiposSanciones() { return tiposSanciones; }
-        
-        @Override
-        public String toString() {
-            return String.format("📊 Estadísticas: %d sanciones totales, %d activas", 
-                               totalSanciones, sancionesActivas);
-        }
+    public void limpiarSancionesExpiradas() {
+        sancionesActivas.removeIf(sancion -> !sancion.estaActiva());
     }
 }

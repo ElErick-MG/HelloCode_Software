@@ -17,6 +17,7 @@ import java.util.ArrayList;
 // Importar las clases del modelo y controladores
 import Comunidad_Modulo.controladores.ContextoSistema;
 import Comunidad_Modulo.modelo.*;
+import Comunidad_Modulo.modelo.IModerador;
 import Modulo_Usuario.Clases.UsuarioComunidad;
 import MetodosGlobales.MetodosFrecuentes;
 
@@ -335,7 +336,7 @@ public class GestionChat_Controller implements Initializable {
             String contenido = mensajeResult.get().trim();
 
             // Capturar el estado inicial del moderador para detectar nuevas sanciones
-            Moderador moderador = contexto.getComunidadActual().getModerador();
+            IModerador moderador = contexto.getComunidadActual().getModerador();
             List<SancionUsuario> sancionesAnteriores = new ArrayList<>(moderador.getSancionesActivas());
             boolean estabaSancionado = moderador.usuarioEstaSancionado(emisorFinal);
 

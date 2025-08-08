@@ -24,6 +24,7 @@ import Comunidad_Modulo.enums.TipoSolucion;
 import Comunidad_Modulo.enums.EstadoHilo;
 import Comunidad_Modulo.servicios.ComunidadService;
 import Comunidad_Modulo.servicios.PersistenciaService;
+import Comunidad_Modulo.modelo.IModerador;
 import MetodosGlobales.MetodosFrecuentes;
 import MetodosGlobales.SesionManager;
 
@@ -1079,7 +1080,7 @@ public class GestionForo_Controller implements Initializable {
             String contenido = respuestaResult.get().trim();
 
             // Procesar la respuesta con moderación
-            Moderador moderador = contexto.getComunidadActual().getModerador();
+            IModerador moderador = contexto.getComunidadActual().getModerador();
             // La respuesta se crea con un ID temporal, que será reemplazado al guardar
             Respuesta tempRespuesta = new Respuesta(UUID.randomUUID().toString(), contenido, autor);
             boolean respuestaEnviada = hilo.responder(contenido, autor, moderador);

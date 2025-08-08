@@ -1,7 +1,7 @@
 package Comunidad_Modulo.modelo;
 
 import Modulo_Usuario.Clases.UsuarioComunidad;
-import Comunidad_Modulo.servicios.ModeracionService.ResultadoModeracion;
+import Comunidad_Modulo.modelo.IModerador.ResultadoModeracion;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class ChatPrivado {
     }
     
     // Métodos de negocio
-    public boolean enviarMensaje(String contenido, UsuarioComunidad emisor, Moderador moderador) {
+    public boolean enviarMensaje(String contenido, UsuarioComunidad emisor, IModerador moderador) {
         if (!participantes.contains(emisor)) {
             throw new IllegalArgumentException("El usuario no es participante del chat");
         }
@@ -55,7 +55,7 @@ public class ChatPrivado {
         }
         
         // Moderar el contenido del mensaje
-        ResultadoModeracion resultado = moderador.moderarMensaje(contenido, emisor);
+        ResultadoModeracion resultado = moderador.procesarContenido(contenido, emisor);
         
         if (!resultado.isAprobado()) {
             System.out.println("🚫 MENSAJE BLOQUEADO EN CHAT PRIVADO");

@@ -15,7 +15,7 @@ public class Comunidad {
     private List<UsuarioComunidad> usuariosMiembros;     // Usuarios que pertenecen permanentemente
     private List<UsuarioComunidad> usuariosConectados;  // Usuarios activos en esta sesión
     private LocalDateTime fechaCreacion;
-    private Moderador moderador;
+    private IModerador moderador; // Cambiado a interfaz
     
     public Comunidad(String nombre, String descripcion) {
         this.idComunidad = UUID.randomUUID().toString();
@@ -28,7 +28,7 @@ public class Comunidad {
         this.fechaCreacion = LocalDateTime.now();
         
         // Inicializar moderador automático para la comunidad
-        this.moderador = new Moderador("ModeradorBot_" + nombre);
+        this.moderador = new ModeradorAutomatico("ModeradorBot_" + nombre);
         this.moderador.asignarComunidad(this);
     }
     
@@ -73,11 +73,11 @@ public class Comunidad {
         return fechaCreacion;
     }
     
-    public Moderador getModerador() {
+    public IModerador getModerador() {
         return moderador;
     }
     
-    public void setModerador(Moderador moderador) {
+    public void setModerador(IModerador moderador) {
         this.moderador = moderador;
         moderador.asignarComunidad(this);
     }

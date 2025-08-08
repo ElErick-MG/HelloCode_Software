@@ -1,4 +1,4 @@
-module Modulo_Ejercicio {
+module HelloCode_Software {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.graphics;
